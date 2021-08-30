@@ -1,0 +1,58 @@
+***SETUP***
+1. select images you want to run the calibration on. Place them in a separate folder and rename them "imageNN", where NN are incremental numbers. Look at each image large and ensure they are sharp and in focus, so the square picking algorithm can be accurate.
+2. Start MATLAB and run the program "calib_gui.m" from /data/users/jharbeck/Working/lens_distortion_corrections/TOOLBOX_calib
+3. Ensure the path in #2 is in your list of paths in MATLAB
+4. Change the current working MATLAB path to the directory the calibration photos are in
+
+***Initial Calibration iteration***
+5. run calib_gui.m
+6. click "standard" and then "read images". it'll come up with an overview composite image of all of them. Check to see they're the ones you want.
+7. click "calibrate/extract grid corners". leave prompt blank to use all images
+8. The wintx and winty of the "corner finder" is the search box to find a corner around the area you click. Just hit enter to use the 11x11 default size. This will require you click accurately, but sure!
+9. Select the auto square counter by hitting enter
+10. Now select the corners of the grid, from top left going clockwise around to bottom left.
+11. Enter the number of squares and their sizes at the prompts
+12. Continue processing all images until done.
+13. If the guessed red grid squares don't fit the grid well, then enter a manual distortion between 1.0 & -1.0
+14. if you mess up on an image, you can always go back once you're done and click the "calibrate/extract grid corners" button again and specify individual images to redo. Make sure to use brackets when specifying. ex. [2,3,10]
+15. Hit the "calibrate" button to have it read all the info in from each image. Copy and paste the output into a file for values to be used later in IDL, noting that this is "iteration 1".
+16. Click on "Analyze error" button to look at the scatter in the pixel reprojections. Save this plot with "iteration 1" in the filename. Exit interactive graph by right clicking.
+17. Save the calibration by clicking "save", this saves things to the current working folder - hopefully where the calibration photos are.
+
+***Iteration 2: automatic refinement***
+18. Go through a second iteration using the current calibration as a starting point. Click "recomp. corners", select the defaults for wintx=winty=5 and all images. 
+19. Click "calibration" again to have another calibration run done with these refined corner selections. Save the output to the text file above with "iteration 2" in it.
+20. Again click on "Analyze error" button to look at the scatter in the pixel reprojections. Save this plot with "iteration 2" in the filename. 
+21. Save this updated calibration by clicking "save". It will rename the previous calibrations before naming these the default filenames.
+ #If the error is small enough at this point, skip the manual section below and go right to visualizing the calibration section below
+
+***Additional iterations: manual refinement***
+22. On the still open "Analyze Error" plot, query the plot to find out which images have the largest error. Write these down for manual reprocessing next. Exit interactive graph by right clicking.
+23. Go through each image that needs work using the "Reproject on Images" button. 
+	a) For each image Pan and zoom to around to see how "off" some corner selections are from the actual corners in the picture. 
+	b) Write down approx how many pixels off the modeled corners are from the actual ones. 
+	c) Use the "recomp corners" button with adjusted wintx=winty=?? values to aid the automatic corner finder in getting the correct corners. If necessary, use the manual option. 
+	d) You can view updates with "reproject images" button immediately after running the "calib. corners" function. 
+	e) Do this for all wonky photos.
+24. Once done manually adjusting all fits, rerun "calibration" function. 
+25. Copy output to text file again, noting "iteration 3"
+26. Click on "Analyze error" button to look at the scatter in the pixel reprojections. Save this plot with "iteration 3" in the filename. Exit interactive graph by right clicking. 
+ # if the manual calibration isn't better than iteration 2, don't save it in the next step, reload the previous calibration with the "load" button and go from there.
+27. Save the calibration by clicking "save", things should rename themselves again. 
+ 
+
+***Visualize Calibration***
+28. Go back to the main MATLAB screen and open the function "visualize_distortions.m". Run this to visualize the results of the calibration. You can save these plots to the folder with the calibration images. 
+
+***Generate h5 files***
+29. Load up "output_inverse_lens_dist_coords****.m" file, where the **** part contains version and campaign info. 
+30. Save file as new function, specific to what you're running it on.
+31. adjust X & Y size in top of function to fit sensor you're using.
+32. Fill in lens distortion values in IDL code from text file. 
+	a) radial and tangential components are from "Distortion" field in text file as follows:
+		kc = [radial1 radial2 tangential1 tangential2 radial3]
+	b) fc & cc are copied over, but flipped due to row/column difference between IDL & MATLAB.
+		So text file [fc1, fc2] is [fc2,fc1] in IDL. Ditto for cc.
+33. Update "file_out" parameter
+34. Run MATLAB code just edited to generate *.h5 files
+35. Use in IDL code for georeferencing!
